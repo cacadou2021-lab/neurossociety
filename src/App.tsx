@@ -5,8 +5,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import useSupabaseData from "@/hooks/useSupabaseData";
+import useAuth from "@/hooks/useAuth";
 import Layout from "@/components/Layout";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import LandingPage from "@/pages/Landing";
+import AuthPage from "@/pages/Auth";
 import Dashboard from "@/pages/Dashboard";
 import PositionsPage from "@/pages/Positions";
 import SignalsPage from "@/pages/Signals";
@@ -39,47 +42,72 @@ function AnimatedRoutes() {
   );
 }
 
-function AppRoutes() {
+function DashboardLayout({ children }: { children: React.ReactNode }) {
   const data = useSupabaseData();
+  const { user, signOut } = useAuth();
+
+  return (
+    <Layout
+      portfolio={data.portfolio}
+      lastUpdate={data.lastUpdate}
+      isSyncing={data.isSyncing}
+      onRefresh={data.refresh}
+      connectionError={data.connectionError}
+      userEmail={user?.email}
+      onSignOut={signOut}
+    >
+      {children}
+    </Layout>
+  );
+}
+
+function DashboardContent() {
+  const data = useSupabaseData();
+  return (
+    <Dashboard
+      portfolio={data.portfolio}
+      positions={data.positions}
+      signals={data.signals}
+      trades={data.trades}
+      equityHistory={data.equityHistory}
+      loading={data.loading}
+    />
+  );
+}
+
+function PositionsContent() {
+  const data = useSupabaseData();
+  return <PositionsPage positions={data.positions} loading={data.loading} />;
+}
+
+function SignalsContent() {
+  const data = useSupabaseData();
+  return <SignalsPage signals={data.signals} loading={data.loading} />;
+}
+
+function TradesContent() {
+  const data = useSupabaseData();
+  return <TradesPage trades={data.trades} loading={data.loading} />;
+}
+
+function AppRoutes() {
+  const { user, loading } = useAuth();
+
+  const protect = (children: React.ReactNode) => (
+    <ProtectedRoute user={user} loading={loading}>
+      <DashboardLayout>{children}</DashboardLayout>
+    </ProtectedRoute>
+  );
 
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
-      <Route
-        path="/dashboard"
-        element={
-          <Layout portfolio={data.portfolio} lastUpdate={data.lastUpdate} isSyncing={data.isSyncing} onRefresh={data.refresh} connectionError={data.connectionError}>
-            <Dashboard
-              portfolio={data.portfolio}
-              positions={data.positions}
-              signals={data.signals}
-              trades={data.trades}
-              equityHistory={data.equityHistory}
-              loading={data.loading}
-            />
-          </Layout>
-        }
-      />
-      <Route path="/positions" element={
-        <Layout portfolio={data.portfolio} lastUpdate={data.lastUpdate} isSyncing={data.isSyncing} onRefresh={data.refresh} connectionError={data.connectionError}>
-          <PositionsPage positions={data.positions} loading={data.loading} />
-        </Layout>
-      } />
-      <Route path="/signals" element={
-        <Layout portfolio={data.portfolio} lastUpdate={data.lastUpdate} isSyncing={data.isSyncing} onRefresh={data.refresh} connectionError={data.connectionError}>
-          <SignalsPage signals={data.signals} loading={data.loading} />
-        </Layout>
-      } />
-      <Route path="/trades" element={
-        <Layout portfolio={data.portfolio} lastUpdate={data.lastUpdate} isSyncing={data.isSyncing} onRefresh={data.refresh} connectionError={data.connectionError}>
-          <TradesPage trades={data.trades} loading={data.loading} />
-        </Layout>
-      } />
-      <Route path="/settings" element={
-        <Layout portfolio={data.portfolio} lastUpdate={data.lastUpdate} isSyncing={data.isSyncing} onRefresh={data.refresh} connectionError={data.connectionError}>
-          <SettingsPage />
-        </Layout>
-      } />
+      <Route path="/auth" element={<AuthPage />} />
+      <Route path="/dashboard" element={protect(<DashboardContent />)} />
+      <Route path="/positions" element={protect(<PositionsContent />)} />
+      <Route path="/signals" element={protect(<SignalsContent />)} />
+      <Route path="/trades" element={protect(<TradesContent />)} />
+      <Route path="/settings" element={protect(<SettingsPage />)} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

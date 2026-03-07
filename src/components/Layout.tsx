@@ -1,5 +1,5 @@
 import { ReactNode, useState } from "react";
-import { useLocation, NavLink } from "react-router-dom";
+import { useLocation, NavLink, useNavigate } from "react-router-dom";
 import AppSidebar from "./AppSidebar";
 import AppHeader from "./AppHeader";
 import MobileNav from "./MobileNav";
@@ -12,6 +12,8 @@ interface LayoutProps {
   isSyncing: boolean;
   onRefresh: () => void;
   connectionError?: boolean;
+  userEmail?: string;
+  onSignOut?: () => void;
 }
 
 const pageTitles: Record<string, string> = {
@@ -30,17 +32,22 @@ const navItems = [
   { path: "/settings", label: "Settings", emoji: "⚙️" },
 ];
 
-export default function Layout({ children, portfolio, lastUpdate, isSyncing, onRefresh, connectionError }: LayoutProps) {
+export default function Layout({ children, portfolio, lastUpdate, isSyncing, onRefresh, connectionError, userEmail, onSignOut }: LayoutProps) {
   const location = useLocation();
+  const navigate = useNavigate();
   const title = pageTitles[location.pathname] || "Dashboard";
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const handleSignOut = async () => {
+    onSignOut?.();
+    navigate("/auth", { replace: true });
+  };
+
   return (
     <div className="min-h-screen bg-background relative">
-      {/* Subtle animated background grid */}
       <div className="fixed inset-0 z-0 pointer-events-none bg-grid-pattern opacity-[0.03]" />
 
-      <AppSidebar portfolio={portfolio} />
+      <AppSidebar portfolio={portfolio} userEmail={userEmail} onSignOut={handleSignOut} />
 
       {/* Mobile slide-out menu */}
       {mobileMenuOpen && (
@@ -87,6 +94,19 @@ export default function Layout({ children, portfolio, lastUpdate, isSyncing, onR
                   </p>
                 )}
               </div>
+              {/* User section (mobile) */}
+              {userEmail && (
+                <>
+                  <div className="my-3 border-t border-border-subtle" />
+                  <p className="text-[11px] text-muted-foreground truncate mb-2">{userEmail}</p>
+                  <button
+                    onClick={handleSignOut}
+                    className="w-full py-1.5 text-xs rounded-lg border border-border-subtle text-muted-foreground hover:bg-card-hover transition-colors duration-150"
+                  >
+                    Sign Out
+                  </button>
+                </>
+              )}
             </div>
           </aside>
         </div>
@@ -103,7 +123,6 @@ export default function Layout({ children, portfolio, lastUpdate, isSyncing, onR
           marketTrend={portfolio?.market_trend}
         />
 
-        {/* Connection error banner */}
         {connectionError && (
           <div className="mx-4 lg:mx-6 mt-4 bg-warning-dim border border-warning/20 rounded-lg p-3 flex items-center gap-2 animate-fade-in">
             <span>⚠️</span>
