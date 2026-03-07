@@ -156,6 +156,16 @@ export default function LandingPage() {
       <div className="fixed top-[-200px] right-[-200px] w-[700px] h-[700px] rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, hsl(160 84% 39% / 0.06) 0%, transparent 70%)" }} />
       <div className="fixed bottom-[-200px] left-[-200px] w-[600px] h-[600px] rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, hsl(200 90% 50% / 0.04) 0%, transparent 70%)" }} />
 
+      {/* ── Top banner ── */}
+      <div className="relative z-10 bg-accent/5 border-b border-accent/10 py-2 px-4 text-center">
+        <p className="text-[11px] font-body text-muted-foreground">
+          Powered by{" "}
+          <a href="https://ssociety.eu/" target="_blank" rel="noopener noreferrer" className="text-accent font-semibold hover:underline">
+            SSocietyHUB
+          </a>
+        </p>
+      </div>
+
       {/* ═══ 1. NAVBAR ═══ */}
       <nav className="relative z-10 flex items-center justify-between px-6 lg:px-12 py-5 max-w-7xl mx-auto">
         <Link to="/" className="flex items-center gap-2.5">
@@ -365,11 +375,17 @@ export default function LandingPage() {
 
       {/* ═══ 8. FOOTER ═══ */}
       <footer className="relative z-10 border-t border-border-subtle py-8 px-6">
-        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="max-w-5xl mx-auto flex flex-col items-center gap-4">
           <div className="flex items-center gap-2">
             <img src={logo} alt="NeuroTrade" className="w-6 h-6 object-contain opacity-60" />
             <span className="text-xs text-muted-foreground font-body">NeuroTrade © 2026</span>
           </div>
+          <p className="text-[11px] text-muted-foreground font-body">
+            Powered by{" "}
+            <a href="https://ssociety.eu/" target="_blank" rel="noopener noreferrer" className="text-accent font-semibold hover:underline">
+              SSocietyHUB
+            </a>
+          </p>
           <p className="text-[10px] text-muted-foreground/60 font-body text-center">
             Paper Trading Only. This is not financial advice.
           </p>
