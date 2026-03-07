@@ -67,11 +67,19 @@ interface Trade {
   timestamp?: string;
 }
 
+interface CycleLog {
+  id: string;
+  level: string;
+  message: string;
+  timestamp?: string;
+}
+
 export interface SupabaseData {
   portfolio: Portfolio | null;
   positions: Position[];
   signals: Signal[];
   trades: Trade[];
+  logs: CycleLog[];
   equityHistory: number[];
   loading: boolean;
   lastUpdate: Date | null;
@@ -96,6 +104,7 @@ export default function useSupabaseData(): SupabaseData {
   const [positions, setPositions] = useState<Position[]>([]);
   const [signals, setSignals] = useState<Signal[]>([]);
   const [trades, setTrades] = useState<Trade[]>([]);
+  const [logs, setLogs] = useState<CycleLog[]>([]);
   const [equityHistory, setEquityHistory] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
@@ -106,17 +115,20 @@ export default function useSupabaseData(): SupabaseData {
   const fetchAll = useCallback(async () => {
     setIsSyncing(true);
     try {
-      const [p, pos, sig, tr] = await Promise.all([
+      const [p, pos, sig, tr, lg] = await Promise.all([
         fetchTable<Portfolio>("portfolio_snapshot"),
         fetchTable<Position>("open_positions"),
         fetchTable<Signal>("signals"),
         fetchTable<Trade>("trades"),
+        fetchTable<CycleLog>("cycle_logs"),
       ]);
       const snap = p?.[0] ?? null;
       setPortfolio(snap);
       setPositions(pos ?? []);
       setSignals(sig ?? []);
       setTrades(tr ?? []);
+      const sortedLogs = (lg ?? []).sort((a, b) => new Date(b.timestamp ?? 0).getTime() - new Date(a.timestamp ?? 0).getTime());
+      setLogs(sortedLogs);
       setConnectionError(false);
       if (snap?.equity != null) {
         setEquityHistory((prev) => {
@@ -167,5 +179,5 @@ export default function useSupabaseData(): SupabaseData {
     };
   }, [fetchAll]);
 
-  return { portfolio, positions, signals, trades, equityHistory, loading, lastUpdate, isSyncing, connectionError, refresh: fetchAll };
+  return { portfolio, positions, signals, trades, logs, equityHistory, loading, lastUpdate, isSyncing, connectionError, refresh: fetchAll };
 }
