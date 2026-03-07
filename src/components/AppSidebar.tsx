@@ -1,8 +1,11 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { formatCurrencyPlain, formatCurrency } from "@/lib/format";
+import { LogOut } from "lucide-react";
 
 interface SidebarProps {
   portfolio: { equity?: number; pnl?: number; pnl_pct?: number; updated_at?: string } | null;
+  userEmail?: string;
+  onSignOut?: () => void;
 }
 
 const navItems = [
@@ -13,7 +16,7 @@ const navItems = [
   { path: "/settings", label: "Settings", emoji: "⚙️" },
 ];
 
-export default function AppSidebar({ portfolio }: SidebarProps) {
+export default function AppSidebar({ portfolio, userEmail, onSignOut }: SidebarProps) {
   const location = useLocation();
   const isFresh = portfolio?.updated_at
     ? (Date.now() - new Date(portfolio.updated_at).getTime()) < 30000
@@ -75,6 +78,21 @@ export default function AppSidebar({ portfolio }: SidebarProps) {
             </p>
           )}
         </div>
+
+        {/* User section */}
+        {userEmail && (
+          <>
+            <div className="my-3 border-t border-border-subtle" />
+            <p className="text-[11px] text-muted-foreground truncate mb-2 font-body">{userEmail}</p>
+            <button
+              onClick={onSignOut}
+              className="w-full py-1.5 text-xs rounded-lg border border-border-subtle text-muted-foreground hover:bg-card-hover hover:text-foreground transition-colors duration-150 flex items-center justify-center gap-1.5"
+            >
+              <LogOut className="w-3 h-3" />
+              Sign Out
+            </button>
+          </>
+        )}
       </div>
     </aside>
   );
