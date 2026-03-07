@@ -7,6 +7,7 @@ interface DashboardProps {
   positions: any[];
   signals: any[];
   trades: any[];
+  logs: any[];
   equityHistory: number[];
   loading: boolean;
 }
@@ -15,7 +16,7 @@ function SkeletonCard() {
   return <div className="bg-card border border-border-subtle rounded-xl p-6 animate-pulse"><div className="h-4 bg-card-hover rounded w-24 mb-3" /><div className="h-8 bg-card-hover rounded w-32 mb-2" /><div className="h-3 bg-card-hover rounded w-20" /></div>;
 }
 
-export default function Dashboard({ portfolio, positions, signals, trades, equityHistory, loading }: DashboardProps) {
+export default function Dashboard({ portfolio, positions, signals, trades, logs, equityHistory, loading }: DashboardProps) {
   if (loading) {
     return (
       <div className="space-y-6">
@@ -230,6 +231,74 @@ export default function Dashboard({ portfolio, positions, signals, trades, equit
             </table>
           </div>
         )}
+      </div>
+      {/* Bot Status + Live Bot Activity */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+        {/* Bot Status */}
+        <div className="lg:col-span-2 bg-card border border-border-subtle rounded-xl p-5 shadow-lg shadow-black/20">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-heading text-base font-semibold flex items-center gap-2">⚡ Bot Status</h3>
+            <span className="flex items-center gap-1.5 text-xs text-accent font-mono">
+              <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+              ACTIVE 24/7
+            </span>
+          </div>
+          <div className="space-y-3 text-sm">
+            <div className="flex justify-between"><span className="text-muted-foreground">Current Cycle</span><span className="font-mono font-semibold">#{portfolio?.cycle ?? 0}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Last Update</span><span className="font-mono">{portfolio?.updated_at ? new Date(portfolio.updated_at).toLocaleTimeString("ro-RO", { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "--"}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Market Trend</span><TrendBadge trend={portfolio?.market_trend} /></div>
+            <div className="flex justify-between items-center"><span className="text-muted-foreground">Safe Mode</span><span className={`text-xs font-medium ${portfolio?.safe_mode ? "text-warning" : "text-accent"}`}>{portfolio?.safe_mode ? "🟡 ON" : "🟢 OFF"}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Total Trades</span><span className="font-mono font-semibold">{portfolio?.total_trades ?? 0}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Open Positions</span><span className="font-mono font-semibold">{portfolio?.open_positions ?? 0}</span></div>
+          </div>
+          <div className="border-t border-border-subtle mt-4 pt-3">
+            <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
+              Analyzing 8 stocks every 15 min via Gemini AI
+            </p>
+          </div>
+        </div>
+
+        {/* Live Bot Activity */}
+        <div className="lg:col-span-3 bg-card border border-border-subtle rounded-xl p-5 shadow-lg shadow-black/20">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-heading text-base font-semibold flex items-center gap-2">
+              🖥️ Live Bot Activity
+              <span className="flex items-center gap-1 ml-1">
+                <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+                <span className="text-xs text-accent font-mono">LIVE</span>
+              </span>
+            </h3>
+            <span className="text-xs text-muted-foreground">last {Math.min(logs.length, 50)} events</span>
+          </div>
+          <div className="space-y-0.5 font-mono text-xs max-h-[280px] overflow-y-auto scrollbar-hide">
+            {logs.slice(0, 50).map((log: any) => (
+              <div
+                key={log.id}
+                className={`flex gap-2 sm:gap-3 py-1 border-b border-border-subtle/30 ${
+                  log.level === "ERROR" ? "text-destructive" : log.level === "WARNING" ? "text-warning" : "text-muted-foreground"
+                }`}
+              >
+                <span className="text-muted-foreground/60 shrink-0">
+                  {log.timestamp ? new Date(log.timestamp).toLocaleTimeString("ro-RO", { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "--"}
+                </span>
+                <span
+                  className={`shrink-0 px-1.5 rounded text-[10px] border ${
+                    log.level === "ERROR"
+                      ? "text-destructive border-destructive/20 bg-destructive/10"
+                      : log.level === "WARNING"
+                      ? "text-warning border-warning/20 bg-warning/10"
+                      : "text-accent border-accent/20 bg-accent/10"
+                  }`}
+                >
+                  {log.level}
+                </span>
+                <span className="truncate">{log.message}</span>
+              </div>
+            ))}
+            {logs.length === 0 && <p className="text-muted-foreground py-4 text-center">Nicio activitate încă</p>}
+          </div>
+        </div>
       </div>
     </div>
   );

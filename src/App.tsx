@@ -69,6 +69,7 @@ function DashboardContent() {
       positions={data.positions}
       signals={data.signals}
       trades={data.trades}
+      logs={data.logs}
       equityHistory={data.equityHistory}
       loading={data.loading}
     />
