@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { formatCurrencyPlain, formatNumber } from "@/lib/format";
+import logo from "@/assets/logo.png";
 
 const SUPABASE_URL = "https://lgrllhsfgvnngtmlwwug.supabase.co";
 const SUPABASE_KEY = "sb_publishable_KtQkZ2_nx8rR65ypG9ZWSw_AjVWWX-N";
@@ -75,8 +76,8 @@ export default function LandingPage() {
 
       {/* Nav */}
       <nav className="relative z-10 flex items-center justify-between px-6 lg:px-12 py-6 max-w-7xl mx-auto">
-        <Link to="/dashboard" className="flex items-center gap-2">
-          <span className="text-2xl">🤖</span>
+        <Link to="/" className="flex items-center gap-2">
+          <img src={logo} alt="NeuroSSociety Logo" className="w-9 h-9 object-contain" />
           <span className="font-heading text-xl font-bold tracking-tight">
             Neuro<span className="text-accent">SS</span>ociety
           </span>
