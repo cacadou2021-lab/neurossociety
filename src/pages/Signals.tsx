@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { formatCurrencyPlain } from "@/lib/format";
-import { timeAgo } from "@/lib/format";
+import { formatCurrencyPlain, timeAgo } from "@/lib/format";
+import { analyzeWatchlist } from "@/lib/gemini-service";
+import { toast } from "sonner";
 
 interface SignalsPageProps {
   signals: any[];
