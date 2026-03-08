@@ -36,15 +36,49 @@ export default function SignalsPage({ signals, loading }: SignalsPageProps) {
   }
 
   const allSignals = signals;
+  
+  // Get unique symbols for filter dropdown
+  const uniqueSymbols = [...new Set([...signals.map(s => s.symbol), ...aiSignals.map(s => s.symbol)])].sort();
+  
+  // Apply filters
+  const applyFilters = (signalsList: any[]) => {
+    return signalsList.filter(s => {
+      // Action filter
+      if (filter !== "ALL" && s.action !== filter) return false;
+      
+      // Symbol filter
+      if (symbolFilter !== "ALL" && s.symbol !== symbolFilter) return false;
+      
+      // Date range filter
+      if (fromDate || toDate) {
+        const signalDate = new Date(s.created_at || s.updated_at);
+        if (fromDate && signalDate < fromDate) return false;
+        if (toDate && signalDate > toDate) return false;
+      }
+      
+      return true;
+    });
+  };
+  
+  const filteredSignals = applyFilters(allSignals);
+  const filteredAiSignals = applyFilters(aiSignals);
+  
   const filters = ["ALL", "BUY", "SELL", "HOLD"];
-  const counts: Record<string, number> = { ALL: allSignals.length };
-  filters.slice(1).forEach(f => { counts[f] = allSignals.filter(s => s.action === f).length; });
+  const counts: Record<string, number> = { ALL: filteredSignals.length };
+  filters.slice(1).forEach(f => { counts[f] = filteredSignals.filter(s => s.action === f).length; });
 
-  const filtered = filter === "ALL" ? allSignals : allSignals.filter(s => s.action === filter);
-
-  const avgConfidence = allSignals.length > 0
-    ? (allSignals.reduce((sum, s) => sum + (s.confidence ?? 0), 0) / allSignals.length).toFixed(1)
+  const avgConfidence = filteredSignals.length > 0
+    ? (filteredSignals.reduce((sum, s) => sum + (s.confidence ?? 0), 0) / filteredSignals.length).toFixed(1)
     : "0.0";
+
+  const clearFilters = () => {
+    setFilter("ALL");
+    setSymbolFilter("ALL");
+    setFromDate(undefined);
+    setToDate(undefined);
+  };
+
+  const hasActiveFilters = filter !== "ALL" || symbolFilter !== "ALL" || fromDate || toDate;
 
   // Group AI signals by batch (created_at within same minute)
   const latestBatchTime = aiSignals[0]?.created_at;
