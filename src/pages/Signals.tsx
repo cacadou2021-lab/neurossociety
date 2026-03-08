@@ -10,6 +10,24 @@ interface SignalsPageProps {
 
 export default function SignalsPage({ signals, loading }: SignalsPageProps) {
   const [filter, setFilter] = useState("ALL");
+  const [aiSignals, setAiSignals] = useState<any[]>([]);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [lastAnalysis, setLastAnalysis] = useState<string | null>(null);
+
+  const handleAnalyze = async () => {
+    setAnalyzing(true);
+    try {
+      const result = await analyzeWatchlist();
+      setAiSignals(result.signals);
+      setLastAnalysis(result.generatedAt);
+      toast.success(`AI analyzed ${result.signals.length} symbols via ${result.model}`);
+    } catch (err: any) {
+      toast.error(err.message || "AI analysis failed");
+      console.error("AI analysis error:", err);
+    } finally {
+      setAnalyzing(false);
+    }
+  };
 
   if (loading) {
     return (
