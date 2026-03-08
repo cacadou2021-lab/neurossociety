@@ -16,6 +16,9 @@ interface SignalsPageProps {
 
 export default function SignalsPage({ signals, loading }: SignalsPageProps) {
   const [filter, setFilter] = useState("ALL");
+  const [symbolFilter, setSymbolFilter] = useState<string>("ALL");
+  const [fromDate, setFromDate] = useState<Date>();
+  const [toDate, setToDate] = useState<Date>();
   const { aiSignals, loading: aiLoading, analyzing, runAnalysis } = useAiSignals();
 
   if (loading && aiLoading) {
