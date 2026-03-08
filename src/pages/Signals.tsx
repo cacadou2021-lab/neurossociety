@@ -60,11 +60,40 @@ export default function SignalsPage({ signals, loading }: SignalsPageProps) {
         <p className="text-sm text-muted-foreground">Gemini 2.0 Flash analysis — refreshes every cycle</p>
       </div>
 
+      {/* AI Analysis button */}
+      <div className="flex items-center gap-3">
+        <button
+          onClick={handleAnalyze}
+          disabled={analyzing}
+          className="px-4 py-2 rounded-lg bg-accent text-accent-foreground text-sm font-medium hover:bg-accent/90 transition-colors disabled:opacity-50"
+        >
+          {analyzing ? "Analyzing…" : "🤖 Run AI Analysis"}
+        </button>
+        {lastAnalysis && (
+          <span className="text-xs text-muted-foreground">Last: {new Date(lastAnalysis).toLocaleTimeString()}</span>
+        )}
+        {aiSignals.length > 0 && (
+          <span className="text-xs text-accent font-medium">{aiSignals.length} AI signals</span>
+        )}
+      </div>
+
+      {/* AI Signals Section */}
+      {aiSignals.length > 0 && (
+        <div className="space-y-3">
+          <h2 className="font-heading text-sm font-semibold text-accent">AI-Generated Signals</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {aiSignals.map((s: any, i: number) => (
+              <SignalCard key={`ai-${i}`} signal={{ ...s, id: `ai-${i}`, price: 0, updated_at: lastAnalysis }} />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Summary bar */}
       <div className="bg-card border border-border-subtle rounded-xl p-4 shadow-lg shadow-black/20 flex flex-wrap items-center gap-4">
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground">Total:</span>
-          <span className="font-mono text-sm font-semibold">{signals.length}</span>
+          <span className="font-mono text-sm font-semibold">{allSignals.length}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="text-xs px-2 py-0.5 rounded-full bg-accent-dim text-accent font-medium">BUY {counts.BUY ?? 0}</span>
