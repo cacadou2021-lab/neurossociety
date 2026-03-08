@@ -66,8 +66,8 @@ export default function TradesPage({ trades, loading }: TradesPageProps) {
 
   const hasActiveFilters = symbolFilter !== "ALL" || typeFilter !== "ALL" || fromDate || toDate;
 
-  const buyTrades = trades.filter(t => t.action === "BUY");
-  const sellTrades = trades.filter(t => t.action === "SELL");
+  const buyTrades = filteredTrades.filter(t => t.action === "BUY");
+  const sellTrades = filteredTrades.filter(t => t.action === "SELL");
   const totalInvested = buyTrades.reduce((s, t) => s + (t.value || (t.qty ?? 0) * (t.price ?? 0)), 0);
   const totalReturned = sellTrades.reduce((s, t) => s + (t.value || (t.qty ?? 0) * (t.price ?? 0)), 0);
   const netBalance = totalReturned - totalInvested;
