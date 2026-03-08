@@ -85,7 +85,48 @@ export default function TradesPage({ trades, loading }: TradesPageProps) {
         </div>
       </div>
 
-      {/* Quick Stats */}
+      {/* Pie Chart - Distribution by Symbol */}
+      {pieData.length > 0 && (
+        <div className="bg-card border border-border-subtle rounded-xl p-5 shadow-lg shadow-black/20">
+          <h3 className="font-heading text-sm font-semibold mb-3">Distribuție Investiții pe Simbol</h3>
+          <div className="flex flex-col lg:flex-row items-center gap-4">
+            <ResponsiveContainer width="100%" height={220} className="max-w-[280px]">
+              <PieChart>
+                <Pie
+                  data={pieData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={50}
+                  outerRadius={90}
+                  paddingAngle={2}
+                  strokeWidth={0}
+                >
+                  {pieData.map((_, idx) => (
+                    <Cell key={idx} fill={PIE_COLORS[idx % PIE_COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{ background: "hsl(217,33%,11%)", border: "1px solid hsl(215,19%,17%)", borderRadius: 8, fontSize: 12 }}
+                  formatter={(v: number) => [formatCurrency(v), "Investit"]}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs">
+              {pieData.map((d, idx) => (
+                <div key={d.name} className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ backgroundColor: PIE_COLORS[idx % PIE_COLORS.length] }} />
+                  <span className="font-heading font-semibold">{d.name}</span>
+                  <span className="text-muted-foreground font-mono">{formatCurrency(d.value)}</span>
+                  <span className="text-muted-foreground/60">({((d.value / totalInvested) * 100).toFixed(1)}%)</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
           { label: "Total Trades", value: trades.length.toString() },
