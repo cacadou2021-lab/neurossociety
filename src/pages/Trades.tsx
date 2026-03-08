@@ -16,6 +16,10 @@ interface TradesPageProps {
 
 export default function TradesPage({ trades, loading }: TradesPageProps) {
   const [page, setPage] = useState(0);
+  const [symbolFilter, setSymbolFilter] = useState<string>("ALL");
+  const [typeFilter, setTypeFilter] = useState<string>("ALL");
+  const [fromDate, setFromDate] = useState<Date>();
+  const [toDate, setToDate] = useState<Date>();
   const perPage = 20;
 
   if (loading) {
