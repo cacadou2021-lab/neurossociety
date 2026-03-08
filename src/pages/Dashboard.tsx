@@ -63,7 +63,7 @@ export default function Dashboard({ portfolio, positions, signals, trades, logs,
       {/* KPI Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <div className="bg-card border border-border-subtle rounded-xl p-5 shadow-lg shadow-black/20">
-          <p className="text-xs text-muted-foreground font-body mb-1">Total Equity</p>
+          <p className="text-xs text-muted-foreground font-body mb-1">Total Equity <span className="text-[9px] text-accent/60">(calculat)</span></p>
           <p className="text-2xl font-mono font-semibold">{formatCurrencyPlain(equity)}</p>
           <p className={`text-sm font-mono mt-1 flex items-center gap-1 ${pnl >= 0 ? "text-accent" : "text-danger"}`}>
             {pnl >= 0 ? "↑" : "↓"} {formatCurrency(pnl)} ({formatPercent(pnlPct)})
@@ -71,7 +71,7 @@ export default function Dashboard({ portfolio, positions, signals, trades, logs,
         </div>
 
         <div className="bg-card border border-border-subtle rounded-xl p-5 shadow-lg shadow-black/20">
-          <p className="text-xs text-muted-foreground font-body mb-1">Available Cash</p>
+          <p className="text-xs text-muted-foreground font-body mb-1">Available Cash <span className="text-[9px] text-accent/60">(calculat)</span></p>
           <p className="text-2xl font-mono font-semibold">{formatCurrencyPlain(cash)}</p>
           <p className="text-xs text-muted-foreground mt-1">{cashRatio.toFixed(1)}% of portfolio</p>
           <div className="mt-2 h-1.5 bg-secondary rounded-full overflow-hidden">
