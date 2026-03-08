@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
-import useSupabaseData from "@/hooks/useSupabaseData";
+import { SupabaseDataProvider, useSharedData } from "@/contexts/SupabaseDataContext";
 import useAuth from "@/hooks/useAuth";
 import Layout from "@/components/Layout";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -42,8 +42,8 @@ function AnimatedRoutes() {
   );
 }
 
-function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const data = useSupabaseData();
+function DashboardShell({ children }: { children: React.ReactNode }) {
+  const data = useSharedData();
   const { user, signOut } = useAuth();
 
   return (
@@ -62,7 +62,7 @@ function DashboardLayout({ children }: { children: React.ReactNode }) {
 }
 
 function DashboardContent() {
-  const data = useSupabaseData();
+  const data = useSharedData();
   return (
     <Dashboard
       portfolio={data.portfolio}
@@ -77,17 +77,17 @@ function DashboardContent() {
 }
 
 function PositionsContent() {
-  const data = useSupabaseData();
+  const data = useSharedData();
   return <PositionsPage positions={data.positions} loading={data.loading} />;
 }
 
 function SignalsContent() {
-  const data = useSupabaseData();
+  const data = useSharedData();
   return <SignalsPage signals={data.signals} loading={data.loading} />;
 }
 
 function TradesContent() {
-  const data = useSupabaseData();
+  const data = useSharedData();
   return <TradesPage trades={data.trades} loading={data.loading} />;
 }
 
@@ -96,7 +96,7 @@ function AppRoutes() {
 
   const protect = (children: React.ReactNode) => (
     <ProtectedRoute user={user} loading={loading}>
-      <DashboardLayout>{children}</DashboardLayout>
+      <DashboardShell>{children}</DashboardShell>
     </ProtectedRoute>
   );
 
@@ -104,10 +104,10 @@ function AppRoutes() {
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/auth" element={<AuthPage />} />
-      <Route path="/dashboard" element={<DashboardLayout><DashboardContent /></DashboardLayout>} />
-      <Route path="/positions" element={<DashboardLayout><PositionsContent /></DashboardLayout>} />
-      <Route path="/signals" element={<DashboardLayout><SignalsContent /></DashboardLayout>} />
-      <Route path="/trades" element={<DashboardLayout><TradesContent /></DashboardLayout>} />
+      <Route path="/dashboard" element={<DashboardShell><DashboardContent /></DashboardShell>} />
+      <Route path="/positions" element={<DashboardShell><PositionsContent /></DashboardShell>} />
+      <Route path="/signals" element={<DashboardShell><SignalsContent /></DashboardShell>} />
+      <Route path="/trades" element={<DashboardShell><TradesContent /></DashboardShell>} />
       <Route path="/settings" element={protect(<SettingsPage />)} />
       <Route path="*" element={<NotFound />} />
     </Routes>
@@ -120,7 +120,9 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <AnimatedRoutes />
+        <SupabaseDataProvider>
+          <AnimatedRoutes />
+        </SupabaseDataProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
