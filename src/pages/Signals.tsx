@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { formatCurrencyPlain } from "@/lib/format";
-import { timeAgo } from "@/lib/format";
+import { formatCurrencyPlain, timeAgo } from "@/lib/format";
+import { analyzeWatchlist } from "@/lib/gemini-service";
+import { toast } from "sonner";
 
 interface SignalsPageProps {
   signals: any[];
@@ -9,6 +10,24 @@ interface SignalsPageProps {
 
 export default function SignalsPage({ signals, loading }: SignalsPageProps) {
   const [filter, setFilter] = useState("ALL");
+  const [aiSignals, setAiSignals] = useState<any[]>([]);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [lastAnalysis, setLastAnalysis] = useState<string | null>(null);
+
+  const handleAnalyze = async () => {
+    setAnalyzing(true);
+    try {
+      const result = await analyzeWatchlist();
+      setAiSignals(result.signals);
+      setLastAnalysis(result.generatedAt);
+      toast.success(`AI analyzed ${result.signals.length} symbols via ${result.model}`);
+    } catch (err: any) {
+      toast.error(err.message || "AI analysis failed");
+      console.error("AI analysis error:", err);
+    } finally {
+      setAnalyzing(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -24,14 +43,15 @@ export default function SignalsPage({ signals, loading }: SignalsPageProps) {
     );
   }
 
+  const allSignals = signals;
   const filters = ["ALL", "BUY", "SELL", "HOLD"];
-  const counts: Record<string, number> = { ALL: signals.length };
-  filters.slice(1).forEach(f => { counts[f] = signals.filter(s => s.action === f).length; });
+  const counts: Record<string, number> = { ALL: allSignals.length };
+  filters.slice(1).forEach(f => { counts[f] = allSignals.filter(s => s.action === f).length; });
 
-  const filtered = filter === "ALL" ? signals : signals.filter(s => s.action === filter);
+  const filtered = filter === "ALL" ? allSignals : allSignals.filter(s => s.action === filter);
 
-  const avgConfidence = signals.length > 0
-    ? (signals.reduce((sum, s) => sum + (s.confidence ?? 0), 0) / signals.length).toFixed(1)
+  const avgConfidence = allSignals.length > 0
+    ? (allSignals.reduce((sum, s) => sum + (s.confidence ?? 0), 0) / allSignals.length).toFixed(1)
     : "0.0";
 
   return (
@@ -41,11 +61,40 @@ export default function SignalsPage({ signals, loading }: SignalsPageProps) {
         <p className="text-sm text-muted-foreground">Gemini 2.0 Flash analysis — refreshes every cycle</p>
       </div>
 
+      {/* AI Analysis button */}
+      <div className="flex items-center gap-3">
+        <button
+          onClick={handleAnalyze}
+          disabled={analyzing}
+          className="px-4 py-2 rounded-lg bg-accent text-accent-foreground text-sm font-medium hover:bg-accent/90 transition-colors disabled:opacity-50"
+        >
+          {analyzing ? "Analyzing…" : "🤖 Run AI Analysis"}
+        </button>
+        {lastAnalysis && (
+          <span className="text-xs text-muted-foreground">Last: {new Date(lastAnalysis).toLocaleTimeString()}</span>
+        )}
+        {aiSignals.length > 0 && (
+          <span className="text-xs text-accent font-medium">{aiSignals.length} AI signals</span>
+        )}
+      </div>
+
+      {/* AI Signals Section */}
+      {aiSignals.length > 0 && (
+        <div className="space-y-3">
+          <h2 className="font-heading text-sm font-semibold text-accent">AI-Generated Signals</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {aiSignals.map((s: any, i: number) => (
+              <SignalCard key={`ai-${i}`} signal={{ ...s, id: `ai-${i}`, price: 0, updated_at: lastAnalysis }} />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Summary bar */}
       <div className="bg-card border border-border-subtle rounded-xl p-4 shadow-lg shadow-black/20 flex flex-wrap items-center gap-4">
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground">Total:</span>
-          <span className="font-mono text-sm font-semibold">{signals.length}</span>
+          <span className="font-mono text-sm font-semibold">{allSignals.length}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="text-xs px-2 py-0.5 rounded-full bg-accent-dim text-accent font-medium">BUY {counts.BUY ?? 0}</span>
