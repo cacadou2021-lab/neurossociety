@@ -30,9 +30,41 @@ export default function TradesPage({ trades, loading }: TradesPageProps) {
     );
   }
 
-  const sorted = [...trades].sort((a, b) => new Date(b.timestamp ?? 0).getTime() - new Date(a.timestamp ?? 0).getTime());
+  // Get unique symbols and types for filter dropdowns
+  const uniqueSymbols = [...new Set(trades.map(t => t.symbol))].sort();
+  const uniqueTypes = [...new Set(trades.map(t => t.type).filter(Boolean))].sort();
+  
+  // Apply filters
+  const filteredTrades = trades.filter(t => {
+    // Symbol filter
+    if (symbolFilter !== "ALL" && t.symbol !== symbolFilter) return false;
+    
+    // Type filter
+    if (typeFilter !== "ALL" && t.type !== typeFilter) return false;
+    
+    // Date range filter
+    if (fromDate || toDate) {
+      const tradeDate = new Date(t.timestamp);
+      if (fromDate && tradeDate < fromDate) return false;
+      if (toDate && tradeDate > toDate) return false;
+    }
+    
+    return true;
+  });
+
+  const sorted = [...filteredTrades].sort((a, b) => new Date(b.timestamp ?? 0).getTime() - new Date(a.timestamp ?? 0).getTime());
   const totalPages = Math.ceil(sorted.length / perPage);
   const paged = sorted.slice(page * perPage, (page + 1) * perPage);
+  
+  const clearFilters = () => {
+    setSymbolFilter("ALL");
+    setTypeFilter("ALL");
+    setFromDate(undefined);
+    setToDate(undefined);
+    setPage(0);
+  };
+
+  const hasActiveFilters = symbolFilter !== "ALL" || typeFilter !== "ALL" || fromDate || toDate;
 
   const buyTrades = trades.filter(t => t.action === "BUY");
   const sellTrades = trades.filter(t => t.action === "SELL");
