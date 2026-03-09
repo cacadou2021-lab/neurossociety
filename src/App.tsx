@@ -14,6 +14,7 @@ import Dashboard from "@/pages/Dashboard";
 import PositionsPage from "@/pages/Positions";
 import SignalsPage from "@/pages/Signals";
 import TradesPage from "@/pages/Trades";
+import LiveTrading from "@/pages/LiveTrading";
 import SettingsPage from "@/pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -91,6 +92,11 @@ function TradesContent() {
   return <TradesPage trades={data.trades} loading={data.loading} />;
 }
 
+function LiveTradingContent() {
+  const data = useSharedData();
+  return <LiveTrading loading={data.loading} />;
+}
+
 function AppRoutes() {
   const { user, loading } = useAuth();
 
@@ -108,6 +114,7 @@ function AppRoutes() {
       <Route path="/positions" element={<DashboardShell><PositionsContent /></DashboardShell>} />
       <Route path="/signals" element={<DashboardShell><SignalsContent /></DashboardShell>} />
       <Route path="/trades" element={<DashboardShell><TradesContent /></DashboardShell>} />
+      <Route path="/live-trading" element={<DashboardShell><LiveTradingContent /></DashboardShell>} />
       <Route path="/settings" element={protect(<SettingsPage />)} />
       <Route path="*" element={<NotFound />} />
     </Routes>

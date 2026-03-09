@@ -4,8 +4,8 @@ const tabs = [
   { path: "/dashboard", label: "Dashboard", emoji: "📊" },
   { path: "/positions", label: "Positions", emoji: "📈" },
   { path: "/signals", label: "Signals", emoji: "🤖" },
+  { path: "/live-trading", label: "Live", emoji: "📺" },
   { path: "/trades", label: "Trades", emoji: "📋" },
-  { path: "/settings", label: "Settings", emoji: "⚙️" },
 ];
 
 export default function MobileNav() {
