@@ -367,6 +367,120 @@ export default function TradesPage({ trades, loading }: TradesPageProps) {
         </div>
       )}
 
+      {/* Performance Analytics */}
+      {performanceData.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Cumulative P&L Chart */}
+          <div className="bg-card border border-border-subtle rounded-xl p-5 shadow-lg shadow-black/20">
+            <h3 className="font-heading text-sm font-semibold mb-3">P&L Cumulativ</h3>
+            <ResponsiveContainer width="100%" height={200}>
+              <LineChart data={performanceData}>
+                <XAxis 
+                  dataKey="date" 
+                  tick={{ fontSize: 10, fill: "hsl(218,11%,65%)" }} 
+                  axisLine={false} 
+                  tickLine={false} 
+                />
+                <YAxis 
+                  tick={{ fontSize: 10, fill: "hsl(218,11%,65%)" }} 
+                  axisLine={false} 
+                  tickLine={false}
+                />
+                <Tooltip
+                  contentStyle={{ background: "hsl(217,33%,11%)", border: "1px solid hsl(215,19%,17%)", borderRadius: 8, fontSize: 12 }}
+                  formatter={(value: number, name: string) => [formatCurrency(value), name === 'cumulativePL' ? 'P&L Cumulativ' : name]}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="cumulativePL" 
+                  stroke="hsl(160,84%,39%)" 
+                  strokeWidth={2}
+                  dot={false}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Daily Volume Chart */}
+          <div className="bg-card border border-border-subtle rounded-xl p-5 shadow-lg shadow-black/20">
+            <h3 className="font-heading text-sm font-semibold mb-3">Volum Zilnic</h3>
+            <ResponsiveContainer width="100%" height={200}>
+              <AreaChart data={performanceData}>
+                <XAxis 
+                  dataKey="date" 
+                  tick={{ fontSize: 10, fill: "hsl(218,11%,65%)" }} 
+                  axisLine={false} 
+                  tickLine={false} 
+                />
+                <YAxis 
+                  tick={{ fontSize: 10, fill: "hsl(218,11%,65%)" }} 
+                  axisLine={false} 
+                  tickLine={false}
+                />
+                <Tooltip
+                  contentStyle={{ background: "hsl(217,33%,11%)", border: "1px solid hsl(215,19%,17%)", borderRadius: 8, fontSize: 12 }}
+                  formatter={(value: number, name: string) => [
+                    formatCurrency(value), 
+                    name === 'buyVolume' ? 'Volum BUY' : name === 'sellVolume' ? 'Volum SELL' : name
+                  ]}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="buyVolume" 
+                  stackId="1"
+                  stroke="hsl(217,91%,60%)" 
+                  fill="hsl(217,91%,60%)"
+                  fillOpacity={0.6}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="sellVolume" 
+                  stackId="1"
+                  stroke="hsl(160,84%,39%)" 
+                  fill="hsl(160,84%,39%)"
+                  fillOpacity={0.6}
+                />
+                <Legend />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Win Rate Trend */}
+          {sellTrades.length > 0 && (
+            <div className="bg-card border border-border-subtle rounded-xl p-5 shadow-lg shadow-black/20 lg:col-span-2">
+              <h3 className="font-heading text-sm font-semibold mb-3">Trend Win Rate</h3>
+              <ResponsiveContainer width="100%" height={160}>
+                <LineChart data={performanceData.filter(d => d.winRate > 0)}>
+                  <XAxis 
+                    dataKey="date" 
+                    tick={{ fontSize: 10, fill: "hsl(218,11%,65%)" }} 
+                    axisLine={false} 
+                    tickLine={false} 
+                  />
+                  <YAxis 
+                    tick={{ fontSize: 10, fill: "hsl(218,11%,65%)" }} 
+                    axisLine={false} 
+                    tickLine={false}
+                    domain={[0, 100]}
+                  />
+                  <Tooltip
+                    contentStyle={{ background: "hsl(217,33%,11%)", border: "1px solid hsl(215,19%,17%)", borderRadius: 8, fontSize: 12 }}
+                    formatter={(value: number) => [`${value}%`, 'Win Rate']}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="winRate" 
+                    stroke="hsl(280,65%,60%)" 
+                    strokeWidth={2}
+                    dot={{ fill: "hsl(280,65%,60%)", strokeWidth: 0, r: 3 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Table */}
       <div className="bg-card border border-border-subtle rounded-xl shadow-lg shadow-black/20 overflow-hidden">
         {paged.length === 0 ? (
