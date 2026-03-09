@@ -81,6 +81,55 @@ export default function SignalsPage({ signals, loading }: SignalsPageProps) {
 
   const hasActiveFilters = filter !== "ALL" || symbolFilter !== "ALL" || fromDate || toDate;
 
+  // Performance charts data for filtered signals
+  const createSignalsPerformanceCharts = () => {
+    // Combine both AI signals and regular signals for analysis
+    const allSignalsForChart = [...filteredSignals, ...filteredAiSignals];
+    
+    if (allSignalsForChart.length === 0) return [];
+
+    // Group signals by date
+    const signalsByDate = new Map<string, any[]>();
+    allSignalsForChart.forEach(s => {
+      const date = s.created_at || s.updated_at;
+      if (!date) return;
+      
+      const dateKey = format(new Date(date), 'yyyy-MM-dd');
+      if (!signalsByDate.has(dateKey)) {
+        signalsByDate.set(dateKey, []);
+      }
+      signalsByDate.get(dateKey)!.push(s);
+    });
+
+    // Create chart data
+    const sortedDates = Array.from(signalsByDate.keys()).sort();
+    
+    return sortedDates.map(dateKey => {
+      const daySignals = signalsByDate.get(dateKey)!;
+      const avgConfidence = daySignals.reduce((sum, s) => sum + (s.confidence ?? 0), 0) / daySignals.length;
+      
+      const buySignals = daySignals.filter(s => s.action === 'BUY').length;
+      const sellSignals = daySignals.filter(s => s.action === 'SELL').length;
+      const holdSignals = daySignals.filter(s => s.action === 'HOLD').length;
+      
+      const executedCount = daySignals.filter(s => s.executed === true).length;
+      const executionRate = daySignals.length > 0 ? (executedCount / daySignals.length * 100) : 0;
+
+      return {
+        date: format(new Date(dateKey), 'dd/MM'),
+        fullDate: dateKey,
+        avgConfidence: Math.round(avgConfidence * 100) / 100,
+        totalSignals: daySignals.length,
+        buySignals,
+        sellSignals,
+        holdSignals,
+        executionRate: Math.round(executionRate * 100) / 100
+      };
+    });
+  };
+
+  const signalsPerformanceData = createSignalsPerformanceCharts();
+
   // Group AI signals by batch (created_at within same minute)
   const latestBatchTime = aiSignals[0]?.created_at;
 
