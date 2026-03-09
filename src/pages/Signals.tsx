@@ -186,6 +186,125 @@ export default function SignalsPage({ signals, loading }: SignalsPageProps) {
         </div>
       </div>
 
+      {/* Performance Analytics */}
+      {signalsPerformanceData.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Confidence Trend */}
+          <div className="bg-card border border-border-subtle rounded-xl p-5 shadow-lg shadow-black/20">
+            <h3 className="font-heading text-sm font-semibold mb-3">Trend Confidence</h3>
+            <ResponsiveContainer width="100%" height={200}>
+              <LineChart data={signalsPerformanceData}>
+                <XAxis 
+                  dataKey="date" 
+                  tick={{ fontSize: 10, fill: "hsl(218,11%,65%)" }} 
+                  axisLine={false} 
+                  tickLine={false} 
+                />
+                <YAxis 
+                  tick={{ fontSize: 10, fill: "hsl(218,11%,65%)" }} 
+                  axisLine={false} 
+                  tickLine={false}
+                  domain={[0, 100]}
+                />
+                <Tooltip
+                  contentStyle={{ background: "hsl(217,33%,11%)", border: "1px solid hsl(215,19%,17%)", borderRadius: 8, fontSize: 12 }}
+                  formatter={(value: number) => [`${value}%`, 'Avg Confidence']}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="avgConfidence" 
+                  stroke="hsl(217,91%,60%)" 
+                  strokeWidth={2}
+                  dot={{ fill: "hsl(217,91%,60%)", strokeWidth: 0, r: 3 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Signal Distribution by Action */}
+          <div className="bg-card border border-border-subtle rounded-xl p-5 shadow-lg shadow-black/20">
+            <h3 className="font-heading text-sm font-semibold mb-3">Distribuție Semnale</h3>
+            <ResponsiveContainer width="100%" height={200}>
+              <AreaChart data={signalsPerformanceData}>
+                <XAxis 
+                  dataKey="date" 
+                  tick={{ fontSize: 10, fill: "hsl(218,11%,65%)" }} 
+                  axisLine={false} 
+                  tickLine={false} 
+                />
+                <YAxis 
+                  tick={{ fontSize: 10, fill: "hsl(218,11%,65%)" }} 
+                  axisLine={false} 
+                  tickLine={false}
+                />
+                <Tooltip
+                  contentStyle={{ background: "hsl(217,33%,11%)", border: "1px solid hsl(215,19%,17%)", borderRadius: 8, fontSize: 12 }}
+                  formatter={(value: number, name: string) => [
+                    value, 
+                    name === 'buySignals' ? 'BUY' : name === 'sellSignals' ? 'SELL' : name === 'holdSignals' ? 'HOLD' : name
+                  ]}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="buySignals" 
+                  stackId="1"
+                  stroke="hsl(160,84%,39%)" 
+                  fill="hsl(160,84%,39%)"
+                  fillOpacity={0.6}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="sellSignals" 
+                  stackId="1"
+                  stroke="hsl(0,84%,60%)" 
+                  fill="hsl(0,84%,60%)"
+                  fillOpacity={0.6}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="holdSignals" 
+                  stackId="1"
+                  stroke="hsl(218,11%,65%)" 
+                  fill="hsl(218,11%,65%)"
+                  fillOpacity={0.6}
+                />
+                <Legend />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Execution Rate */}
+          <div className="bg-card border border-border-subtle rounded-xl p-5 shadow-lg shadow-black/20 lg:col-span-2">
+            <h3 className="font-heading text-sm font-semibold mb-3">Rata de Execuție</h3>
+            <ResponsiveContainer width="100%" height={160}>
+              <BarChart data={signalsPerformanceData}>
+                <XAxis 
+                  dataKey="date" 
+                  tick={{ fontSize: 10, fill: "hsl(218,11%,65%)" }} 
+                  axisLine={false} 
+                  tickLine={false} 
+                />
+                <YAxis 
+                  tick={{ fontSize: 10, fill: "hsl(218,11%,65%)" }} 
+                  axisLine={false} 
+                  tickLine={false}
+                  domain={[0, 100]}
+                />
+                <Tooltip
+                  contentStyle={{ background: "hsl(217,33%,11%)", border: "1px solid hsl(215,19%,17%)", borderRadius: 8, fontSize: 12 }}
+                  formatter={(value: number) => [`${value}%`, 'Execution Rate']}
+                />
+                <Bar 
+                  dataKey="executionRate" 
+                  fill="hsl(280,65%,60%)"
+                  radius={[4, 4, 0, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+
       {/* Filters */}
       <div className="space-y-4">
         <div className="flex flex-wrap items-center gap-3">
