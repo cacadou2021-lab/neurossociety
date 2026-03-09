@@ -87,6 +87,50 @@ export default function TradesPage({ trades, loading }: TradesPageProps) {
     .map(([name, value]) => ({ name, value: Math.round(value * 100) / 100 }))
     .sort((a, b) => b.value - a.value);
 
+  // Performance charts data - based on filtered trades
+  const createPerformanceCharts = () => {
+    // Group trades by date
+    const tradesByDate = new Map<string, { buys: any[], sells: any[], date: string }>();
+    
+    filteredTrades.forEach(t => {
+      const dateKey = format(new Date(t.timestamp), 'yyyy-MM-dd');
+      if (!tradesByDate.has(dateKey)) {
+        tradesByDate.set(dateKey, { buys: [], sells: [], date: dateKey });
+      }
+      const dayData = tradesByDate.get(dateKey)!;
+      if (t.action === 'BUY') dayData.buys.push(t);
+      if (t.action === 'SELL') dayData.sells.push(t);
+    });
+
+    // Create cumulative P&L and volume charts data
+    const sortedDates = Array.from(tradesByDate.keys()).sort();
+    let cumulativePL = 0;
+    
+    return sortedDates.map(dateKey => {
+      const dayData = tradesByDate.get(dateKey)!;
+      const buyVolume = dayData.buys.reduce((sum, t) => sum + (t.value || (t.qty ?? 0) * (t.price ?? 0)), 0);
+      const sellVolume = dayData.sells.reduce((sum, t) => sum + (t.value || (t.qty ?? 0) * (t.price ?? 0)), 0);
+      const dayPL = dayData.sells.reduce((sum, t) => sum + (t.pl ?? 0), 0);
+      cumulativePL += dayPL;
+      
+      const dayWins = dayData.sells.filter(t => (t.pl ?? 0) > 0).length;
+      const dayWinRate = dayData.sells.length > 0 ? (dayWins / dayData.sells.length * 100) : 0;
+
+      return {
+        date: format(new Date(dateKey), 'dd/MM'),
+        fullDate: dateKey,
+        buyVolume: Math.round(buyVolume),
+        sellVolume: Math.round(sellVolume),
+        dailyPL: Math.round(dayPL * 100) / 100,
+        cumulativePL: Math.round(cumulativePL * 100) / 100,
+        winRate: Math.round(dayWinRate * 100) / 100,
+        totalTrades: dayData.buys.length + dayData.sells.length
+      };
+    });
+  };
+
+  const performanceData = createPerformanceCharts();
+
   // P&L chart data - last 10 sell trades
   const plChartData = [...sellTrades]
     .sort((a, b) => new Date(a.timestamp ?? 0).getTime() - new Date(b.timestamp ?? 0).getTime())
