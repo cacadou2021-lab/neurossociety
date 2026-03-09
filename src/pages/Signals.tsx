@@ -8,6 +8,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { LineChart, Line, AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from "recharts";
 
 interface SignalsPageProps {
   signals: any[];
@@ -80,6 +81,55 @@ export default function SignalsPage({ signals, loading }: SignalsPageProps) {
 
   const hasActiveFilters = filter !== "ALL" || symbolFilter !== "ALL" || fromDate || toDate;
 
+  // Performance charts data for filtered signals
+  const createSignalsPerformanceCharts = () => {
+    // Combine both AI signals and regular signals for analysis
+    const allSignalsForChart = [...filteredSignals, ...filteredAiSignals];
+    
+    if (allSignalsForChart.length === 0) return [];
+
+    // Group signals by date
+    const signalsByDate = new Map<string, any[]>();
+    allSignalsForChart.forEach(s => {
+      const date = s.created_at || s.updated_at;
+      if (!date) return;
+      
+      const dateKey = format(new Date(date), 'yyyy-MM-dd');
+      if (!signalsByDate.has(dateKey)) {
+        signalsByDate.set(dateKey, []);
+      }
+      signalsByDate.get(dateKey)!.push(s);
+    });
+
+    // Create chart data
+    const sortedDates = Array.from(signalsByDate.keys()).sort();
+    
+    return sortedDates.map(dateKey => {
+      const daySignals = signalsByDate.get(dateKey)!;
+      const avgConfidence = daySignals.reduce((sum, s) => sum + (s.confidence ?? 0), 0) / daySignals.length;
+      
+      const buySignals = daySignals.filter(s => s.action === 'BUY').length;
+      const sellSignals = daySignals.filter(s => s.action === 'SELL').length;
+      const holdSignals = daySignals.filter(s => s.action === 'HOLD').length;
+      
+      const executedCount = daySignals.filter(s => s.executed === true).length;
+      const executionRate = daySignals.length > 0 ? (executedCount / daySignals.length * 100) : 0;
+
+      return {
+        date: format(new Date(dateKey), 'dd/MM'),
+        fullDate: dateKey,
+        avgConfidence: Math.round(avgConfidence * 100) / 100,
+        totalSignals: daySignals.length,
+        buySignals,
+        sellSignals,
+        holdSignals,
+        executionRate: Math.round(executionRate * 100) / 100
+      };
+    });
+  };
+
+  const signalsPerformanceData = createSignalsPerformanceCharts();
+
   // Group AI signals by batch (created_at within same minute)
   const latestBatchTime = aiSignals[0]?.created_at;
 
@@ -135,6 +185,125 @@ export default function SignalsPage({ signals, loading }: SignalsPageProps) {
           <span className="font-mono text-sm font-semibold">{avgConfidence}%</span>
         </div>
       </div>
+
+      {/* Performance Analytics */}
+      {signalsPerformanceData.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Confidence Trend */}
+          <div className="bg-card border border-border-subtle rounded-xl p-5 shadow-lg shadow-black/20">
+            <h3 className="font-heading text-sm font-semibold mb-3">Trend Confidence</h3>
+            <ResponsiveContainer width="100%" height={200}>
+              <LineChart data={signalsPerformanceData}>
+                <XAxis 
+                  dataKey="date" 
+                  tick={{ fontSize: 10, fill: "hsl(218,11%,65%)" }} 
+                  axisLine={false} 
+                  tickLine={false} 
+                />
+                <YAxis 
+                  tick={{ fontSize: 10, fill: "hsl(218,11%,65%)" }} 
+                  axisLine={false} 
+                  tickLine={false}
+                  domain={[0, 100]}
+                />
+                <Tooltip
+                  contentStyle={{ background: "hsl(217,33%,11%)", border: "1px solid hsl(215,19%,17%)", borderRadius: 8, fontSize: 12 }}
+                  formatter={(value: number) => [`${value}%`, 'Avg Confidence']}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="avgConfidence" 
+                  stroke="hsl(217,91%,60%)" 
+                  strokeWidth={2}
+                  dot={{ fill: "hsl(217,91%,60%)", strokeWidth: 0, r: 3 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Signal Distribution by Action */}
+          <div className="bg-card border border-border-subtle rounded-xl p-5 shadow-lg shadow-black/20">
+            <h3 className="font-heading text-sm font-semibold mb-3">Distribuție Semnale</h3>
+            <ResponsiveContainer width="100%" height={200}>
+              <AreaChart data={signalsPerformanceData}>
+                <XAxis 
+                  dataKey="date" 
+                  tick={{ fontSize: 10, fill: "hsl(218,11%,65%)" }} 
+                  axisLine={false} 
+                  tickLine={false} 
+                />
+                <YAxis 
+                  tick={{ fontSize: 10, fill: "hsl(218,11%,65%)" }} 
+                  axisLine={false} 
+                  tickLine={false}
+                />
+                <Tooltip
+                  contentStyle={{ background: "hsl(217,33%,11%)", border: "1px solid hsl(215,19%,17%)", borderRadius: 8, fontSize: 12 }}
+                  formatter={(value: number, name: string) => [
+                    value, 
+                    name === 'buySignals' ? 'BUY' : name === 'sellSignals' ? 'SELL' : name === 'holdSignals' ? 'HOLD' : name
+                  ]}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="buySignals" 
+                  stackId="1"
+                  stroke="hsl(160,84%,39%)" 
+                  fill="hsl(160,84%,39%)"
+                  fillOpacity={0.6}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="sellSignals" 
+                  stackId="1"
+                  stroke="hsl(0,84%,60%)" 
+                  fill="hsl(0,84%,60%)"
+                  fillOpacity={0.6}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="holdSignals" 
+                  stackId="1"
+                  stroke="hsl(218,11%,65%)" 
+                  fill="hsl(218,11%,65%)"
+                  fillOpacity={0.6}
+                />
+                <Legend />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Execution Rate */}
+          <div className="bg-card border border-border-subtle rounded-xl p-5 shadow-lg shadow-black/20 lg:col-span-2">
+            <h3 className="font-heading text-sm font-semibold mb-3">Rata de Execuție</h3>
+            <ResponsiveContainer width="100%" height={160}>
+              <BarChart data={signalsPerformanceData}>
+                <XAxis 
+                  dataKey="date" 
+                  tick={{ fontSize: 10, fill: "hsl(218,11%,65%)" }} 
+                  axisLine={false} 
+                  tickLine={false} 
+                />
+                <YAxis 
+                  tick={{ fontSize: 10, fill: "hsl(218,11%,65%)" }} 
+                  axisLine={false} 
+                  tickLine={false}
+                  domain={[0, 100]}
+                />
+                <Tooltip
+                  contentStyle={{ background: "hsl(217,33%,11%)", border: "1px solid hsl(215,19%,17%)", borderRadius: 8, fontSize: 12 }}
+                  formatter={(value: number) => [`${value}%`, 'Execution Rate']}
+                />
+                <Bar 
+                  dataKey="executionRate" 
+                  fill="hsl(280,65%,60%)"
+                  radius={[4, 4, 0, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="space-y-4">

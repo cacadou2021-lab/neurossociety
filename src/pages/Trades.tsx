@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { formatCurrencyPlain, formatCurrency } from "@/lib/format";
 import { format } from "date-fns";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, LineChart, Line, AreaChart, Area, Legend } from "recharts";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -86,6 +86,50 @@ export default function TradesPage({ trades, loading }: TradesPageProps) {
   const pieData = [...symbolMap.entries()]
     .map(([name, value]) => ({ name, value: Math.round(value * 100) / 100 }))
     .sort((a, b) => b.value - a.value);
+
+  // Performance charts data - based on filtered trades
+  const createPerformanceCharts = () => {
+    // Group trades by date
+    const tradesByDate = new Map<string, { buys: any[], sells: any[], date: string }>();
+    
+    filteredTrades.forEach(t => {
+      const dateKey = format(new Date(t.timestamp), 'yyyy-MM-dd');
+      if (!tradesByDate.has(dateKey)) {
+        tradesByDate.set(dateKey, { buys: [], sells: [], date: dateKey });
+      }
+      const dayData = tradesByDate.get(dateKey)!;
+      if (t.action === 'BUY') dayData.buys.push(t);
+      if (t.action === 'SELL') dayData.sells.push(t);
+    });
+
+    // Create cumulative P&L and volume charts data
+    const sortedDates = Array.from(tradesByDate.keys()).sort();
+    let cumulativePL = 0;
+    
+    return sortedDates.map(dateKey => {
+      const dayData = tradesByDate.get(dateKey)!;
+      const buyVolume = dayData.buys.reduce((sum, t) => sum + (t.value || (t.qty ?? 0) * (t.price ?? 0)), 0);
+      const sellVolume = dayData.sells.reduce((sum, t) => sum + (t.value || (t.qty ?? 0) * (t.price ?? 0)), 0);
+      const dayPL = dayData.sells.reduce((sum, t) => sum + (t.pl ?? 0), 0);
+      cumulativePL += dayPL;
+      
+      const dayWins = dayData.sells.filter(t => (t.pl ?? 0) > 0).length;
+      const dayWinRate = dayData.sells.length > 0 ? (dayWins / dayData.sells.length * 100) : 0;
+
+      return {
+        date: format(new Date(dateKey), 'dd/MM'),
+        fullDate: dateKey,
+        buyVolume: Math.round(buyVolume),
+        sellVolume: Math.round(sellVolume),
+        dailyPL: Math.round(dayPL * 100) / 100,
+        cumulativePL: Math.round(cumulativePL * 100) / 100,
+        winRate: Math.round(dayWinRate * 100) / 100,
+        totalTrades: dayData.buys.length + dayData.sells.length
+      };
+    });
+  };
+
+  const performanceData = createPerformanceCharts();
 
   // P&L chart data - last 10 sell trades
   const plChartData = [...sellTrades]
@@ -320,6 +364,120 @@ export default function TradesPage({ trades, loading }: TradesPageProps) {
               </Bar>
             </BarChart>
           </ResponsiveContainer>
+        </div>
+      )}
+
+      {/* Performance Analytics */}
+      {performanceData.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Cumulative P&L Chart */}
+          <div className="bg-card border border-border-subtle rounded-xl p-5 shadow-lg shadow-black/20">
+            <h3 className="font-heading text-sm font-semibold mb-3">P&L Cumulativ</h3>
+            <ResponsiveContainer width="100%" height={200}>
+              <LineChart data={performanceData}>
+                <XAxis 
+                  dataKey="date" 
+                  tick={{ fontSize: 10, fill: "hsl(218,11%,65%)" }} 
+                  axisLine={false} 
+                  tickLine={false} 
+                />
+                <YAxis 
+                  tick={{ fontSize: 10, fill: "hsl(218,11%,65%)" }} 
+                  axisLine={false} 
+                  tickLine={false}
+                />
+                <Tooltip
+                  contentStyle={{ background: "hsl(217,33%,11%)", border: "1px solid hsl(215,19%,17%)", borderRadius: 8, fontSize: 12 }}
+                  formatter={(value: number, name: string) => [formatCurrency(value), name === 'cumulativePL' ? 'P&L Cumulativ' : name]}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="cumulativePL" 
+                  stroke="hsl(160,84%,39%)" 
+                  strokeWidth={2}
+                  dot={false}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Daily Volume Chart */}
+          <div className="bg-card border border-border-subtle rounded-xl p-5 shadow-lg shadow-black/20">
+            <h3 className="font-heading text-sm font-semibold mb-3">Volum Zilnic</h3>
+            <ResponsiveContainer width="100%" height={200}>
+              <AreaChart data={performanceData}>
+                <XAxis 
+                  dataKey="date" 
+                  tick={{ fontSize: 10, fill: "hsl(218,11%,65%)" }} 
+                  axisLine={false} 
+                  tickLine={false} 
+                />
+                <YAxis 
+                  tick={{ fontSize: 10, fill: "hsl(218,11%,65%)" }} 
+                  axisLine={false} 
+                  tickLine={false}
+                />
+                <Tooltip
+                  contentStyle={{ background: "hsl(217,33%,11%)", border: "1px solid hsl(215,19%,17%)", borderRadius: 8, fontSize: 12 }}
+                  formatter={(value: number, name: string) => [
+                    formatCurrency(value), 
+                    name === 'buyVolume' ? 'Volum BUY' : name === 'sellVolume' ? 'Volum SELL' : name
+                  ]}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="buyVolume" 
+                  stackId="1"
+                  stroke="hsl(217,91%,60%)" 
+                  fill="hsl(217,91%,60%)"
+                  fillOpacity={0.6}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="sellVolume" 
+                  stackId="1"
+                  stroke="hsl(160,84%,39%)" 
+                  fill="hsl(160,84%,39%)"
+                  fillOpacity={0.6}
+                />
+                <Legend />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Win Rate Trend */}
+          {sellTrades.length > 0 && (
+            <div className="bg-card border border-border-subtle rounded-xl p-5 shadow-lg shadow-black/20 lg:col-span-2">
+              <h3 className="font-heading text-sm font-semibold mb-3">Trend Win Rate</h3>
+              <ResponsiveContainer width="100%" height={160}>
+                <LineChart data={performanceData.filter(d => d.winRate > 0)}>
+                  <XAxis 
+                    dataKey="date" 
+                    tick={{ fontSize: 10, fill: "hsl(218,11%,65%)" }} 
+                    axisLine={false} 
+                    tickLine={false} 
+                  />
+                  <YAxis 
+                    tick={{ fontSize: 10, fill: "hsl(218,11%,65%)" }} 
+                    axisLine={false} 
+                    tickLine={false}
+                    domain={[0, 100]}
+                  />
+                  <Tooltip
+                    contentStyle={{ background: "hsl(217,33%,11%)", border: "1px solid hsl(215,19%,17%)", borderRadius: 8, fontSize: 12 }}
+                    formatter={(value: number) => [`${value}%`, 'Win Rate']}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="winRate" 
+                    stroke="hsl(280,65%,60%)" 
+                    strokeWidth={2}
+                    dot={{ fill: "hsl(280,65%,60%)", strokeWidth: 0, r: 3 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          )}
         </div>
       )}
 
