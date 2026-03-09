@@ -1,12 +1,12 @@
 import { NavLink, useLocation } from "react-router-dom";
 
 const tabs = [
+  { path: "/live-trading", label: "Live", emoji: "📺", isLive: true },
   { path: "/dashboard", label: "Dashboard", emoji: "📊" },
   { path: "/positions", label: "Positions", emoji: "📈" },
   { path: "/signals", label: "Signals", emoji: "🤖" },
-  { path: "/live-trading", label: "Live", emoji: "📺" },
   { path: "/trades", label: "Trades", emoji: "📋" },
-];
+] as const;
 
 export default function MobileNav() {
   const location = useLocation();
