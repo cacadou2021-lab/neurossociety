@@ -5,7 +5,7 @@ import { formatCurrency, formatCurrencyPlain } from "@/lib/format";
 const SB = {
   v1: { url: "https://lgrllhsfgvnngtmlwwug.supabase.co", key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxncmxsaHNmZ3Zubmd0bWx3d3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1OTUzODYsImV4cCI6MjA4NzE3MTM4Nn0.AjMKEgpBwoFXm09aGT9BOCNfrBJJPVx1Ii7ev8ZINg4" },
   v2: { url: "https://qvzupovzynuqqmcmdvou.supabase.co", key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2enVwb3Z6eW51cXFtY21kdm91Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzIxNTMzMSwiZXhwIjoyMDg4NzkxMzMxfQ.pd9SqoI3V0Q4qLc_R64pSaF_sexqeb9MT-9vFKRETt0" },
-  v3: { url: "https://usgkpmoiuegwjsunihha.supabase.co", key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzZ2twbW9pdWVnd2pzdW5paGhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5ODI3NjksImV4cCI6MjA4ODU1ODc2OX0.17LOCZw7awNc1gjb2bolxd8lFnTdDBVO2T7HtUjff6I" },
+  v3: { url: "https://bcrzyyqrlaflejovzrcf.supabase.co", key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnp5eXFybGFmbGVqb3Z6cmNmIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzIyNzU2NiwiZXhwIjoyMDg4ODAzNTY2fQ.4op8M21JGWE-T0X1Oj1r-3d_RaaFnfkHi9vvCsdDeaU" },
 };
 
 async function sbFetch(sb: { url: string; key: string }, table: string, order?: string, limit?: number) {
@@ -358,7 +358,7 @@ export default function LiveTrading() {
     const [p1,t1,s1,p2,pos2,t2,s2,p3,pos3,t3,s3] = await Promise.all([
       sbFetch(SB.v1,"portfolio_snapshot"), sbFetch(SB.v1,"trades","timestamp.desc",100), sbFetch(SB.v1,"signals","updated_at.desc",12),
       sbFetch(SB.v2,"portfolio_snapshot"), sbFetch(SB.v2,"open_positions"), sbFetch(SB.v2,"trades","timestamp.desc",100), sbFetch(SB.v2,"signals","updated_at.desc",12),
-      sbFetch(SB.v3,"portfolio_snapshot"), sbFetch(SB.v3,"open_positions"), sbFetch(SB.v3,"trades","timestamp.desc",100), sbFetch(SB.v3,"signals","updated_at.desc",12),
+      sbFetch(SB.v3,"v5_portfolio"), sbFetch(SB.v3,"v5_positions"), sbFetch(SB.v3,"v5_trades","timestamp.desc",100), sbFetch(SB.v3,"v5_signals","updated_at.desc",12),
     ]);
     setBots({
       v1: { portfolio: p1?.[0]??null, trades: t1??[], positions: [], signals: s1??[] },

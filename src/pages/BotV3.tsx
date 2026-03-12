@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { formatCurrency, formatCurrencyPlain, formatPercent } from "@/lib/format";
 
-// Bot V3 — uses main project Supabase (usgkpmoiuegwjsunihha)
-const SB_URL = "https://usgkpmoiuegwjsunihha.supabase.co";
-const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzZ2twbW9pdWVnd2pzdW5paGhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5ODI3NjksImV4cCI6MjA4ODU1ODc2OX0.17LOCZw7awNc1gjb2bolxd8lFnTdDBVO2T7HtUjff6I";
+// Bot V3 — uses NeuroTrade V5 Supabase (bcrzyyqrlaflejovzrcf)
+const SB_URL = "https://bcrzyyqrlaflejovzrcf.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnp5eXFybGFmbGVqb3Z6cmNmIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzIyNzU2NiwiZXhwIjoyMDg4ODAzNTY2fQ.4op8M21JGWE-T0X1Oj1r-3d_RaaFnfkHi9vvCsdDeaU";
 
 async function fetchTable<T>(table: string, order?: string, limit?: number): Promise<T[]> {
   let url = `${SB_URL}/rest/v1/${table}?select=*`;
@@ -65,10 +65,10 @@ export default function BotV3() {
   const fetchAll = useCallback(async () => {
     try {
       const [p, pos, t, s] = await Promise.all([
-        fetchTable<any>("portfolio_snapshot"),
-        fetchTable<any>("open_positions"),
-        fetchTable<any>("trades", "timestamp.desc", 20),
-        fetchTable<any>("signals", "updated_at.desc", 10),
+        fetchTable<any>("v5_portfolio"),
+        fetchTable<any>("v5_positions"),
+        fetchTable<any>("v5_trades", "timestamp.desc", 20),
+        fetchTable<any>("v5_signals", "updated_at.desc", 10),
       ]);
       setPortfolio(p?.[0] ?? null);
       setPositions(pos ?? []);
