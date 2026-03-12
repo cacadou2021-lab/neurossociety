@@ -65,10 +65,10 @@ export default function BotV3() {
   const fetchAll = useCallback(async () => {
     try {
       const [p, pos, t, s] = await Promise.all([
-        fetchTable<any>("v5_portfolio"),
-        fetchTable<any>("v5_positions"),
-        fetchTable<any>("v5_trades", "timestamp.desc", 20),
-        fetchTable<any>("v5_signals", "updated_at.desc", 10),
+        fetchTable<any>("portfolio_snapshot"),
+        fetchTable<any>("open_positions"),
+        fetchTable<any>("trades", "timestamp.desc", 20),
+        fetchTable<any>("signals", "updated_at.desc", 10),
       ]);
       setPortfolio(p?.[0] ?? null);
       setPositions(pos ?? []);

@@ -358,7 +358,7 @@ export default function LiveTrading() {
     const [p1,t1,s1,p2,pos2,t2,s2,p3,pos3,t3,s3] = await Promise.all([
       sbFetch(SB.v1,"portfolio_snapshot"), sbFetch(SB.v1,"trades","timestamp.desc",100), sbFetch(SB.v1,"signals","updated_at.desc",12),
       sbFetch(SB.v2,"portfolio_snapshot"), sbFetch(SB.v2,"open_positions"), sbFetch(SB.v2,"trades","timestamp.desc",100), sbFetch(SB.v2,"signals","updated_at.desc",12),
-      sbFetch(SB.v3,"v5_portfolio"), sbFetch(SB.v3,"v5_positions"), sbFetch(SB.v3,"v5_trades","timestamp.desc",100), sbFetch(SB.v3,"v5_signals","updated_at.desc",12),
+      sbFetch(SB.v3,"portfolio_snapshot"), sbFetch(SB.v3,"open_positions"), sbFetch(SB.v3,"trades","timestamp.desc",100), sbFetch(SB.v3,"signals","updated_at.desc",12),
     ]);
     setBots({
       v1: { portfolio: p1?.[0]??null, trades: t1??[], positions: [], signals: s1??[] },
