@@ -23,7 +23,7 @@ async function sbFetch(sb: { url: string; key: string }, table: string, order?: 
 const BOT_CONFIG = {
   v1: {
     emoji: "🤖", name: "NeuroTrade v1.0", subtitle: "News Sentiment Bot",
-    status: "deprecated" as const, statusLabel: "⏸ DEPRECATED",
+    status: "live" as const, statusLabel: "🟢 LIVE",
     color: { border: "border-blue-500/30", bg: "bg-blue-500/10", text: "text-blue-400", badge: "bg-blue-500/10 border-blue-500/20 text-blue-400" },
     strategy: [
       { icon: "📰", title: "Colectare Știri", desc: "NewsAPI agregă titluri financiare de pe Yahoo Finance, Google News, Finviz și Seeking Alpha la fiecare 5 minute pentru fiecare simbol din watchlist." },
