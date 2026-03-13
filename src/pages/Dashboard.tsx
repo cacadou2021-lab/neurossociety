@@ -18,7 +18,7 @@ const BOTS = [
     strategy: "News Sentiment",
     symbols: 10,
     cycle: "5 min",
-    status: "deprecated",
+    status: "live",
     link: "/bot-v1",
   },
   {
@@ -103,7 +103,7 @@ function StatusBadge({ status }: { status: string }) {
   );
   return (
     <span className="px-2.5 py-1 rounded-full text-xs font-mono bg-yellow-500/10 border border-yellow-500/20 text-yellow-400">
-      ⏸ DEPRECATED
+      🟢 LIVE
     </span>
   );
 }
