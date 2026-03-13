@@ -104,7 +104,7 @@ export default function BotV1() {
             </div>
           </div>
           <div className="sm:ml-auto flex items-center gap-2 flex-wrap">
-            <span className="px-3 py-1 rounded-full text-xs font-mono bg-yellow-500/10 border border-yellow-500/20 text-yellow-400">⏸ DEPRECATED</span>
+            <span className="px-3 py-1 rounded-full text-xs font-mono bg-yellow-500/10 border border-yellow-500/20 text-yellow-400">🟢 LIVE</span>
             <span className="px-3 py-1 rounded-full text-xs font-mono bg-blue-500/10 border border-blue-500/20 text-blue-400">Paper Trading</span>
             {lastUpdate && (
               <span className="text-xs text-muted-foreground font-mono hidden sm:block">
@@ -127,7 +127,7 @@ export default function BotV1() {
             label: "Equity", val: equity > 0 ? formatCurrencyPlain(equity) : "—",
             sub: <span className={`text-sm font-mono mt-1 ${pnl >= 0 ? "text-accent" : "text-danger"}`}>{pnl >= 0 ? "↑" : "↓"} {formatCurrency(pnl)} ({formatPercent(pnlPct)})</span>
           },
-          { label: "Poziții deschise", val: `${openPos}`, sup: "/10", sub: <span className="text-xs text-muted-foreground">max 10 simultane</span> },
+          { label: "Poziții deschise", val: `${openPos}`, sup: "/10", sub: <span className="text-xs text-muted-foreground">max 20 simultane</span> },
           { label: "Total Trades", val: String(totalTrades), sub: <span className="text-xs text-muted-foreground">{wins}W · {losses}L</span> },
           {
             label: "Win Rate",
