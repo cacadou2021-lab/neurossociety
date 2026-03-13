@@ -252,7 +252,7 @@ function RezultateTab({ data, loading }: { data: BotData; loading: boolean }) {
     acc[t.symbol].pl += t.pl ?? 0;
     return acc;
   }, {});
-  const sortedSymbols = Object.entries(bySymbol).sort((a, b) => b[1].pl - a[1].pl);
+  const sortedSymbols = Object.entries(bySymbol).sort((a, b) => (b[1] as any).pl - (a[1] as any).pl) as [string, { wins: number; losses: number; pl: number }][];
 
   return (
     <div className="space-y-6">
